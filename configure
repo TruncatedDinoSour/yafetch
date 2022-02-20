@@ -33,7 +33,7 @@ check_cmd() {
 
 check_pkg() {
     echo "Checking for $1.pc..."
-    pkg-config --path "$1" >/dev/null || die "$1.pc was not found"
+    pkg-config --cflags "$1" >/dev/null || die "$1.pc was not found"
 }
 
 main() {
