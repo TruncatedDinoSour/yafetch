@@ -4,7 +4,7 @@ set -e
 
 usage() {
     {
-        echo "$0 [FLAGS...]"
+        echo "[ENV]=[VAL] $0 [FLAGS...]"
         echo '    --help                Print help/usage'
         echo '    --use-clang           Use clang instead of default ($CC or cc) compiler'
         echo '    --use-gcc             Use gcc instead of default ($CC or cc) compiler'
@@ -18,6 +18,8 @@ usage() {
         echo '    --use-extreme-strip   Configure strip flags to be extreme'
         echo '    --use-install         Enable the `install` and `uninstall` makefile entries'
         echo '    --use-optimise        Add optimisation flags'
+        echo ''
+        echo '    $LUAPC                Lualib pkg-config name'
     } 1>&2
 }
 
@@ -42,9 +44,11 @@ main() {
         exit 1
     fi
 
+    LUAPC="${LUAPC:-lua5.4}"
+
     check_cmd 'make'
     check_cmd 'pkg-config'
-    check_pkg 'lua5.4'
+    check_pkg "$LUAPC"
 
     project='yafetch'
 
@@ -110,8 +114,8 @@ main() {
     done
 
     echo 'Configuring lua...'
-    cflags="$cflags $(pkg-config --cflags lua5.4 || die 'pkg-config cflags failed for lua5.4')"
-    ldflags="$cflags $(pkg-config --libs lua5.4 || die 'pkg-config ldflags failed for lua5.4')"
+    cflags="$cflags $(pkg-config --cflags "${LUAPC}" || die 'pkg-config cflags failed for lua5.4')"
+    ldflags="$cflags $(pkg-config --libs "${LUAPC}" || die 'pkg-config ldflags failed for lua5.4')"
 
     all=''
 
@@ -131,7 +135,7 @@ main() {
         if [ "$config_enable" = 1 ]; then
             echo 'CONF ?= /usr/share/yafetch'
             echo 'y_config:'
-            printf "\t%s\n" 'rm -rf $(DESTDIR)$(BINDIR)'
+            printf "\t%s\n" 'rm -rf $(DESTDIR)$(CONF)/init.lua'
             printf "\t%s\n" 'mkdir -p $(DESTDIR)$(CONF)'
             printf "\t%s\n" 'install -Dm644 init.lua $(DESTDIR)$(CONF)'
 
@@ -146,7 +150,7 @@ main() {
             all="$all y_strip"
         fi
 
-        if [ "$strip_enable" = 1 ]; then
+        if [ "$install_enable" = 1 ]; then
             echo 'PREFIX ?= /usr/local'
             echo 'BINDIR ?= $(PREFIX)/bin'
 

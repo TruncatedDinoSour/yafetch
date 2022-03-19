@@ -1,10 +1,13 @@
-with import <nixpkgs> {};
+{ pkgs ? import <nixpkgs> {} }:
 
-stdenv.mkDerivation rec {
-    name = "yafetch-env";
+pkgs.mkShell {
     buildInputs = with pkgs; [
-        lua54Packages.lua
+        clang gnumake
+        lua5_4 pkg-config
     ];
-    nativeBuildInputs = with pkgs; [ pkg-config ];
+    nativeBuildInputs = [ pkgs.pkg-config ];
+    shellHook = ''
+        ./configure --use-clang --use-harden --use-strip --use-lto --use-extreme-strip --use-install
+        make
+    '';
 }
-

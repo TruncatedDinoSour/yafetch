@@ -1,4 +1,4 @@
-<p align="center"> <img src="http://0x0.st/-P91.png"> </p>
+<p align="center"> <img src="/media/yafetch.jpg"> </p>
 
 **This project is a fork of [yrwq/yafetch](https://github.com/yrwq/yafetch) with a different build system, more improvements and active porting to newer lua versions**
 
@@ -9,6 +9,7 @@
 - a Linux distribution
 - a C compiler
 - Lua 5.4
+- (For NixOS) [lorri](https://github.com/target/lorri)
 
 # Documentation (Installation, Upgrading, etc.)
 
