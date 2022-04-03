@@ -2,7 +2,7 @@
 
 main() {
     git add -A
-    git commit -sam "update @ $(date)"
+    git commit -sa
     git push -u origin "$(git rev-parse --abbrev-ref HEAD)"
 }
 

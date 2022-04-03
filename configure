@@ -18,9 +18,11 @@ usage() {
         echo '    --use-extreme-strip   Configure strip flags to be extreme'
         echo '    --use-install         Enable the `install` and `uninstall` makefile entries'
         echo '    --use-optimise        Add optimisation flags'
+        echo '    --use-debug           Add debug symbols and generally optimise for debugging'
+        echo '    --use-prog-debug      Enable binary-level debug logging'
         echo ''
         echo '    $LUAPC                Lualib pkg-config name'
-    } 1>&2
+    } >&2
 }
 
 die() {
@@ -53,7 +55,7 @@ main() {
     project='yafetch'
 
     compiler='$(CC)'
-    cflags='-std=c99 -D_POSIX_C_SOURCE=200112L'
+    cflags='-std=c99 -D_POSIX_C_SOURCE=200112L -D_ISOC99_SOURCE'
     ldflags=''
     stripflags=''
     strip_enable=0
@@ -104,8 +106,14 @@ main() {
             install_enable=1
             ;;
         --use-optimise)
-            cflags="$cflags -O2 -ffast-math"
+            cflags="$cflags -O2 -ffast-math -match=native"
             ldflags="$ldflags -O2"
+            ;;
+        --use-debug)
+            cflags="$cflags -g -g3 -O0 -fno-eliminate-unused-debug-types"
+            ;;
+        --use-prog-debug)
+            cflags="$cflags -DDEBUG"
             ;;
         *)
             die "Flag $arg not found"
@@ -117,7 +125,8 @@ main() {
     cflags="$cflags $(pkg-config --cflags "${LUAPC}" || die 'pkg-config cflags failed for lua5.4')"
     ldflags="$cflags $(pkg-config --libs "${LUAPC}" || die 'pkg-config ldflags failed for lua5.4')"
 
-    all=''
+    after=''
+    all='all after clean'
 
     {
         echo 'OBJECTS := src/script.o src/func.o src/main.o'
@@ -147,7 +156,7 @@ main() {
             echo 'y_strip:'
             printf "\t%s\n" "strip $project \$(STRIPFLAGS) -o $project"
 
-            all="$all y_strip"
+            after="$after y_strip"
         fi
 
         if [ "$install_enable" = 1 ]; then
@@ -160,16 +169,18 @@ main() {
 
             echo 'uninstall:'
             printf "\t%s\n" 'rm -i $(DESTDIR)$(BINDIR)/yafetch'
+
+            all="$all install uninstall"
         fi
 
         echo 'after:'
-        if [ "$all" ]; then
-            printf "\t%s\n" "make $all -j$(nproc --all)"
+        if [ "$after" ]; then
+            printf "\t%s\n" "make $after -j$(nproc --all)"
         else
             printf "\t%s\n" "-@echo 'No after-compile phase'"
         fi
 
-        echo ".PHONY: all after $all"
+        echo ".PHONY: $all $after"
     } >Makefile
 }
 
