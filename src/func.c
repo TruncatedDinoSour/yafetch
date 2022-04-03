@@ -1,4 +1,3 @@
-#include "yafetch.h"
 #include <lauxlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -9,13 +8,13 @@
 #include <sys/utsname.h>
 #include <sys/mount.h>
 #include <sys/param.h>
+#include "yafetch.h"
 
 #define LFUNC(N) int lua_##N(lua_State *L)
 
 /* yafetch.user() */
 /* Returns username */
 LFUNC(user) {
-
     uid_t uid         = geteuid();
     struct passwd *pw = getpwuid(uid);
 
@@ -34,25 +33,25 @@ LFUNC(distro) {
     char *new = malloc(512);
     int line  = 0;
 
-    FILE *f = fopen("/etc/os-release", "rt");
+    FILE *os_release = fopen("/etc/os-release", "rt");
 
-    while (fgets(def, 512, f)) {
+    while (fgets(def, 512, os_release)) {
         snprintf(new, 512, "%.*s", 511, def + 4);
         if (strncmp(new, "=", 1) == 0)
             break;
         line++;
     }
 
-    fclose(f);
+    fclose(os_release);
     free(def);
 
     if (strncmp(new, "=", 1) == 0) {
         int len = strlen(new);
 
-        for (int i = 0; i < len; i++) {
-            if (new[i] == '\"' || new[i] == '\'' || new[i] == '=') {
-                for (int ii = 0; ii < len; ii++)
-                    new[ii] = new[ii + 1];
+        for (l_t ln = 0; ln < len; ln++) {
+            if (new[ln] == '\"' || new[ln] == '\'' || new[ln] == '=') {
+                for (l_t chr = 0; chr < len; chr++)
+                    new[chr] = new[chr + 1];
                 new[strlen(new) - 1] = '\0';
             }
         }
@@ -62,6 +61,8 @@ LFUNC(distro) {
         lua_pushstring(L, new);
     else
         lua_pushstring(L, "unknown");
+
+    free(new);
 
     return 1;
 }
@@ -81,54 +82,44 @@ LFUNC(hostname) {
 /* yafetch.pkgs() */
 /* Returns number of installed packages */
 LFUNC(pkgs) {
-    int apt, dnf, emerge, nix, pacman, rpm, xbps, bonsai, apk, total = 0;
+    char *package_managers[9] = {
+        "dnf list installed",
+        "dpkg-query -f '${binary:Package}\n' -W",
+        "q qlist -I",
+        "nix-store -q --requisites /run/current-system/sw",
+        "pacman -Qq",
+        "rpm -qa --last",
+        "xbps-query -l",
+        "bonsai list",
+        "apk info"};
 
-    FILE *file[9];
-    file[0] = popen(
-        "dpkg-query -f '${binary:Package}\n' -W 2> /dev/null | wc -l", "r");
-    file[1] = popen("dnf list installed 2> /dev/null | wc -l", "r");
-    file[2] = popen("qlist -I 2> /dev/null | wc -l", "r");
-    file[3] = popen(
-        "nix-store -q --requisites /run/current-system/sw 2> /dev/null | wc -l",
-        "r");
-    file[4] = popen("pacman -Qq 2> /dev/null | wc -l", "r");
-    file[5] = popen("rpm -qa --last 2> /dev/null | wc -l", "r");
-    file[6] = popen("xbps-query -l 2> /dev/null | wc -l", "r");
-    file[7] = popen("bonsai list  2> /dev/null | wc -l", "r");
-    file[8] = popen("apk info 2> /dev/null | wc -l", "r");
+    const pkg_t package_manager_count =
+        sizeof package_managers / sizeof package_managers[0];
 
-    fscanf(file[0], "%d", &apt);
-    fscanf(file[1], "%d", &dnf);
-    fscanf(file[2], "%d", &emerge);
-    fscanf(file[3], "%d", &nix);
-    fscanf(file[4], "%d", &pacman);
-    fscanf(file[5], "%d", &rpm);
-    fscanf(file[6], "%d", &xbps);
-    fscanf(file[7], "%d", &bonsai);
-    fscanf(file[8], "%d", &apk);
-    for (int i = 0; i < 9; i++)
-        fclose(file[i]);
+    pkgc_t total = 0;
 
-    if (apt > 0)
-        total += apt;
-    if (dnf > 0)
-        total += dnf;
-    if (emerge > 0)
-        total += emerge;
-    if (nix > 0)
-        total += nix;
-    if (pacman > 0)
-        total += pacman;
-    if (rpm > 0)
-        total += rpm;
-    if (xbps > 0)
-        total += xbps;
-    if (bonsai > 0)
-        total += bonsai;
-    if (apk > 0)
-        total += apk;
+    for (pkg_t pkg = 0; pkg < package_manager_count; ++pkg) {
+        char full_cmd[70] = {0};
+        strcpy(full_cmd, package_managers[pkg]);
+        strcat(full_cmd, pkg_end);
 
-    if (total)
+        FILE *packages = popen(full_cmd, "r");
+
+        if (packages) {
+            pkgc_t tmp = 0;
+
+            if (fscanf(packages, "%lu", &tmp) != 1) {
+                perror("Failed to fscanf() for packages");
+                return 0;
+            }
+
+            total += tmp;
+        }
+
+        pclose(packages);
+    }
+
+    if (total > 0)
         lua_pushinteger(L, total);
     else
         lua_pushinteger(L, 0);
@@ -154,21 +145,20 @@ LFUNC(kernel) {
 /* yafetch.shell() */
 /* Returns path of shell */
 LFUNC(shell) {
-
     lua_getglobal(L, "yafetch");
     lua_getfield(L, -1, "shell_base");
 
+    struct passwd *pw    = getpwuid(getuid());
     const int shell_full = lua_toboolean(L, -1);
-    char *shell          = getenv("SHELL");
 
     /* Get basename of shell by looking for last '/' */
-    char *slash = strrchr(shell, '/');
+    char *slash = strrchr(pw->pw_shell, '/');
 
-    if (shell) {
+    if (pw->pw_shell) {
         if (shell_full == 1)
-            shell = slash + 1;
+            pw->pw_shell = slash + 1;
 
-        lua_pushstring(L, shell);
+        lua_pushstring(L, pw->pw_shell);
     } else
         lua_pushstring(L, "unknown");
 
@@ -177,7 +167,6 @@ LFUNC(shell) {
 
 /* yafetch.header() */
 LFUNC(header) {
-
     lua_getglobal(L, "yafetch");
 
     lua_getfield(L, -1, "header_sep");
@@ -207,9 +196,11 @@ LFUNC(header) {
         fmt = "";
 
     /* Get arguments from lua function */
+
     /* Header color */
     const char *h1_col;
     h1_col = "\033[0m";
+
     /* Second header color */
     const char *h2_col;
     h2_col = "\033[0m";
@@ -219,8 +210,7 @@ LFUNC(header) {
     gethostname(hostname, 255);
 
     /* Get username */
-    uid_t uid         = geteuid();
-    struct passwd *pw = getpwuid(uid);
+    struct passwd *pw = getpwuid(geteuid());
 
     printf("%s%s%s%s%s%s%s%s%s%s\n", h1_col, fmt, pw->pw_name, reset, sep_color,
            sep, reset, h2_col, hostname, reset);
@@ -232,7 +222,6 @@ LFUNC(header) {
 /* Formats given strings. */
 /* Helpers function to output information */
 LFUNC(format) {
-
     lua_getglobal(L, "yafetch");
 
     lua_getfield(L, -1, "sep");

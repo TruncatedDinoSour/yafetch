@@ -1,0 +1,37 @@
+==2409== Lackey, an example Valgrind tool
+==2409== Copyright (C) 2002-2017, and GNU GPL'd, by Nicholas Nethercote.
+==2409== Using Valgrind-3.18.1 and LibVEX; rerun with -h for copyright info
+==2409== Command: /bin/sh -c xbps-query\ -l\ 2\>/dev/null\ |\ wc==1934== 
+==1934== Process terminating wi==2409== 
+==2409== Process terminating with default action of signal 2 (SIGINT)
+==2409==    at 0x4020652: __open_nocancel (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x4004560: open_verify.constprop.0 (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x40079DE: _dl_map_object (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x4002500: openaux (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x4017315: _dl_catch_exception (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x400287E: _dl_map_object_deps (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x401D4A2: dl_main (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x401983F: _dl_sysdep_start (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x401B207: _dl_start (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x401A277: ??? (in /lib64/ld-linux-x86-64.so.2)
+==2409==    by 0x2: ???
+==2409==    by 0x1FFEFFFDE6: ???
+==2409== 
+==2409== Counted 0 calls to main()
+==2409== 
+==2409== Jccs:
+==2409==   total:         18,555
+==2409==   taken:         6,382 (34%)
+==2409== 
+==2409== Executed:
+==2409==   SBs entered:   18,599
+==2409==   SBs completed: 11,173
+==2409==   guest instrs:  75,507
+==2409==   IRStmts:       558,002
+==2409== 
+==2409== Ratios:
+==2409==   guest instrs : SB entered  = 40 : 10
+==2409==        IRStmts : SB entered  = 300 : 10
+==2409==        IRStmts : guest instr = 73 : 10
+==2409== 
+==2409== Exit code:       0

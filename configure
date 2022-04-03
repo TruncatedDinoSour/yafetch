@@ -53,7 +53,7 @@ main() {
     project='yafetch'
 
     compiler='$(CC)'
-    cflags=''
+    cflags='-std=c99 -D_POSIX_C_SOURCE=200112L'
     ldflags=''
     stripflags=''
     strip_enable=0

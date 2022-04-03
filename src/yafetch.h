@@ -6,8 +6,13 @@
 
 extern lua_State *L;
 
-#define reset "\x1B[0m"
-#define red   "\x1B[31m"
+typedef short unsigned int pkg_t;
+typedef long unsigned int pkgc_t;
+typedef unsigned short int l_t;
+
+#define reset   "\x1B[0m"
+#define red     "\x1B[31m"
+#define pkg_end " 2>/dev/null | wc -l"
 
 void script_init(void);
 void script_run(char *filename);
