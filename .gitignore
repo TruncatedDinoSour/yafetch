@@ -69,4 +69,5 @@ Makefile
 
 # Valgrind
 *.out.*
+valgrind.log
 
