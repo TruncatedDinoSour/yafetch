@@ -1,3 +1,4 @@
+#include "yafetch.h"
 #include <lauxlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -8,7 +9,6 @@
 #include <sys/utsname.h>
 #include <sys/mount.h>
 #include <sys/param.h>
-#include "yafetch.h"
 
 #define LFUNC(N) int lua_##N(lua_State *L)
 
