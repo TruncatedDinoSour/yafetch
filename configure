@@ -106,7 +106,7 @@ main() {
             install_enable=1
             ;;
         --use-optimise)
-            cflags="$cflags -O2 -ffast-math -match=native"
+            cflags="$cflags -O2 -ffast-math -march=native"
             ldflags="$ldflags -O2"
             ;;
         --use-debug)
