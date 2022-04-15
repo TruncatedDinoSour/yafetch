@@ -88,16 +88,17 @@ LFUNC(hostname) {
 /* Returns number of installed packages */
 LFUNC(pkgs) {
     PDBD("Getting packages");
-    char *package_managers[9] = {
+    char *package_managers[10] = {
+        "q qlist -I",
         "dnf list installed",
         "dpkg-query -f '${binary:Package}\n' -W",
-        "q qlist -I",
         "nix-store -q --requisites /run/current-system/sw",
         "pacman -Qq",
         "rpm -qa --last",
         "xbps-query -l",
         "bonsai list",
-        "apk info"};
+        "apk info",
+        "pkg list-installed"};
 
     PDBD("Getting package_manager_count");
     const pkg_t package_manager_count =

@@ -20,6 +20,7 @@ usage() {
         echo '    --use-optimise        Add optimisation flags'
         echo '    --use-debug           Add debug symbols and generally optimise for debugging'
         echo '    --use-prog-debug      Enable binary-level debug logging'
+        echo '    --use-march           Enable -march=native'
         echo ''
         echo '    $LUAPC                Lualib pkg-config name'
     } >&2
@@ -106,7 +107,7 @@ main() {
             install_enable=1
             ;;
         --use-optimise)
-            cflags="$cflags -O2 -ffast-math -march=native"
+            cflags="$cflags -O2 -ffast-math"
             ldflags="$ldflags -O2"
             ;;
         --use-debug)
@@ -114,6 +115,9 @@ main() {
             ;;
         --use-prog-debug)
             cflags="$cflags -DDEBUG"
+            ;;
+        --use-march)
+            cflags="$cflags -march=native"
             ;;
         *)
             die "Flag $arg not found"
