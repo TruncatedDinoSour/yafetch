@@ -78,8 +78,8 @@ main() {
             compiler='gcc'
             ;;
         --use-harden)
-            cflags="$cflags -g -fstack-protector-strong -fstack-protector -fPIE -pie -D_FORTIFY_SOURCE=2 -O1 -Wno-unused-result -Wno-unused-command-line-argument"
-            ldflags="$ldflags -fpie,-Wl,-z,relro,now"
+            cflags="$cflags -g -fstack-protector-strong -fstack-protector -fPIE -pie -D_FORTIFY_SOURCE=2 -O2 -Wno-unused-result -Wno-unused-command-line-argument"
+            ldflags="$ldflags -Wl,-z,relro,-z,now"
             ;;
         --use-strip)
             strip_enable=1
@@ -127,7 +127,7 @@ main() {
 
     echo 'Configuring lua...'
     cflags="$cflags $(pkg-config --cflags "${LUAPC}" || die 'pkg-config cflags failed for lua5.4')"
-    ldflags="$cflags $(pkg-config --libs "${LUAPC}" || die 'pkg-config ldflags failed for lua5.4')"
+    ldflags="$ldflags $(pkg-config --libs "${LUAPC}" || die 'pkg-config ldflags failed for lua5.4')"
 
     after=''
     all='all after clean'
