@@ -1,0 +1,28 @@
+#!/usr/bin/env sh
+
+set -e
+
+log 'Setting up CC'
+case "$CC" in
+'' | gcc | clang) export CC="${CC:-clang}" ;;
+*) error 'Failed to set CC -- invalid CC (gcc/clang)' ;;
+esac
+
+log 'Checking dependencies'
+use lua "$CC" pkg-config make strip nproc
+
+if [ -f Makefile ]; then
+    log 'Cleaning up'
+    make clean
+    rm -- Makefile
+fi
+
+log 'Configuring'
+chmod a+rx ./configure
+./configure --use-warnings --use-"$CC" --use-lto --use-optimise --use-pedantic --use-werror \
+    --use-strip --use-extreme-strip --use-march
+
+log 'Installing'
+make -j"$(nproc --all)"
+mkdir -p -- "$BAZP_SRC/commands"
+mv -- yafetch "$BAZP_SRC/commands"

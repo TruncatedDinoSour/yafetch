@@ -92,4 +92,10 @@ https://aur.archlinux.org/packages/yafetch-git/ (NOTE: This is **not the fork, i
 
 [app-misc/yafetch::dinolay](https://ari-web.xyz/gentooatom/app-misc/yafetch)
 
+# [Baz plugin manager](https://ari-web.xyz/gh/baz)
+
+```sh
+baz install git 'https://ari-web.xyz/gh/baz'
+```
+
 ## Suggestions, maintainers and more sources are welcome (PRs are open)

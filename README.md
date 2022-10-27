@@ -6,10 +6,10 @@
 
 # Dependencies
 
-- a Linux distribution
-- a C compiler
-- Lua 5.4
-- (For NixOS) [lorri](https://github.com/target/lorri)
+-   a Linux distribution
+-   a C compiler
+-   Lua 5.4
+-   (For NixOS) [lorri](https://github.com/target/lorri)
 
 # Documentation (Installation, Upgrading, etc.)
 
@@ -28,13 +28,13 @@ See [Docs](/doc/FUNC.md).
 
 ## Requirements
 
-- Bash
-- Valgrind
-- Coreutils
-- Clang
-- GCC
-- Binutils
-- Lua 5.4
+-   Bash
+-   Valgrind
+-   Coreutils
+-   Clang
+-   GCC
+-   Binutils
+-   Lua 5.4
 
 ## Testing
 

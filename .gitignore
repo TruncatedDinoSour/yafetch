@@ -72,3 +72,5 @@ Makefile
 *.out.*
 valgrind.log
 
+# Baz
+plugin/commands
