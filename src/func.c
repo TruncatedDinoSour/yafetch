@@ -1,4 +1,5 @@
 #include "yafetch.h"
+
 #include <lauxlib.h>
 #include <sys/sysinfo.h>
 #include <sys/utsname.h>
@@ -6,7 +7,7 @@
 #include <sys/param.h>
 #include <pwd.h>
 
-#define LFUNC(N) int lua_##N(lua_State *L)
+#define LFUNC(N) static int lua_##N(lua_State *L)
 
 /* yafetch.user() */
 /* Returns username */
@@ -25,9 +26,9 @@ LFUNC(distro) {
 
     char *def = malloc(512);
     char *new = malloc(512);
-    l_t line  = 0;
+    static l_t line  = 0;
 
-    l_t len;
+    static l_t len;
 
     PDBD("Opening /etc/os-release");
     FILE *os_release = fopen("/etc/os-release", "rt");
@@ -52,14 +53,13 @@ LFUNC(distro) {
     if (strncmp(new, "=", 1) == 0) {
         len = strlen(new);
 
-        for (l_t ln = 0; ln < len; ln++) {
+        for (l_t ln = 0; ln < len; ln++)
             if (new[ln] == '\"' || new[ln] == '\'' || new[ln] == '=') {
                 for (l_t chr = 0; chr < len; chr++)
                     new[chr] = new[chr + 1];
 
                 new[strlen(new) - 1] = '\0';
             }
-        }
     }
 
     lua_pushstring(L, new ? new : "unknown");
@@ -88,7 +88,7 @@ LFUNC(hostname) {
 /* Returns number of installed packages */
 LFUNC(pkgs) {
     PDBD("Getting packages");
-    char *package_managers[10] = {
+    static const char *package_managers[] = {
         "q qlist -I",
         "dnf list installed",
         "dpkg-query -f '${binary:Package}\n' -W",
@@ -98,10 +98,11 @@ LFUNC(pkgs) {
         "xbps-query -l",
         "bonsai list",
         "apk info",
-        "pkg list-installed"};
+        "pkg list-installed",
+    };
 
     PDBD("Getting package_manager_count");
-    const pkg_t package_manager_count =
+    static const pkg_t package_manager_count =
         sizeof package_managers / sizeof package_managers[0];
 
     pkgc_t total      = 0;
@@ -115,7 +116,7 @@ LFUNC(pkgs) {
             break;
         }
 
-        char full_cmd[70] = {0};
+        char full_cmd[50] = {0};
         strcpy(full_cmd, package_managers[pkg]);
         strcat(full_cmd, PKG_END);
 
@@ -146,7 +147,7 @@ LFUNC(pkgs) {
 /* Returns kernel version */
 LFUNC(kernel) {
     PDBD("Getting kernel");
-    struct utsname sys;
+    static struct utsname sys;
 
     PDBD("getting uname() for kernel");
 
@@ -224,11 +225,11 @@ LFUNC(header) {
     /* Get arguments from lua function */
 
     /* Header colours */
-    const char *h1_col = "\033[0m";
-    const char *h2_col = "\033[0m";
+    static const char *h1_col = "\033[0m";
+    static const char *h2_col = "\033[0m";
 
     /* Get hostname */
-    char hostname[255];
+    char hostname[255] = {0};
 
     PDBD("Getting hostname in getting header");
     gethostname(hostname, 255);

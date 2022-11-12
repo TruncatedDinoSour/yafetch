@@ -1,6 +1,6 @@
 #include "yafetch.h"
 
-int main(int argc, char **argv) {
+int main(int argc, char *argv[]) {
     PDBD("Running program");
 
     /* Create a lua vm */
