@@ -1,6 +1,4 @@
 #!/usr/bin/env sh
 
-set -e
-
-log 'Update: recompiling'
+baz_log 'update : recompiling'
 baz_run_hook 'pre-install'

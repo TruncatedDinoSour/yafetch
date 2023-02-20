@@ -1,28 +1,26 @@
 #!/usr/bin/env sh
 
-set -e
-
-log 'Setting up CC'
+baz_log 'setting up CC'
 case "$CC" in
-'' | gcc | clang) export CC="${CC:-clang}" ;;
-*) error 'Failed to set CC -- invalid CC (gcc/clang)' ;;
+'' | cc | gcc | clang) export CC="${CC:-clang}" ;;
+*) error 'failed to set CC -- invalid CC (gcc/clang)' ;;
 esac
 
-log 'Checking dependencies'
-use lua "$CC" pkg-config make strip nproc
+baz_log 'checking dependencies'
+baz_use lua "$CC" pkg-config make strip nproc
 
 if [ -f Makefile ]; then
-    log 'Cleaning up'
+    baz_log 'cleaning up'
     make clean
     rm -- Makefile
 fi
 
-log 'Configuring'
+baz_log 'configuring'
 chmod a+rx ./configure
 ./configure --use-warnings --use-"$CC" --use-lto --use-optimise --use-pedantic --use-werror \
     --use-strip --use-extreme-strip --use-march
 
-log 'Installing'
+baz_log 'Installing'
 make -j"$(nproc --all)"
 mkdir -p -- "$BAZP_SRC/commands"
 mv -- yafetch "$BAZP_SRC/commands"
