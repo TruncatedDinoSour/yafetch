@@ -1,3 +1,4 @@
+# This repository has been migrated to the self-hosted ari-web Forgejo instance: <https://git.ari.lt/ari/yafetch>
 <p align="center"> <img src="/media/yafetch.jpg"> </p>
 
 **This project is a fork of [yrwq/yafetch](https://github.com/yrwq/yafetch) with a different build system, more improvements and active porting to newer lua versions**
